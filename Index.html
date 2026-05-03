@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PicPay</title>
+    <style>
+        :root {
+            --picpay-green: #2ecc71;
+            --soft-green: #e8f7f0;
+            --dark-green: #1e7e57;
+            --light-gray: #f5f5f5;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #fff; }
+        .app-container { height: 100%; display: flex; flex-direction: column; position: relative; }
+
+        .page { display: none; height: 100%; flex-direction: column; width: 100%; overflow-y: auto; padding-bottom: 80px; }
+        .page.active { display: flex; }
+
+        /* --- HOME --- */
+        #homePage { background: linear-gradient(135deg, #2ecc71, #a3e4d7); }
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .profile-pic { width: 45px; height: 45px; background: #000; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .balance-section { padding: 10px 25px; color: #000; cursor: pointer; }
+        .main-balance { font-size: 34px; font-weight: bold; margin: 5px 0; }
+        
+        .options-grid { display: flex; gap: 12px; padding: 20px; overflow-x: auto; scrollbar-width: none; }
+        .option-card { min-width: 95px; height: 110px; background: rgba(255,255,255,0.6); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 12px; cursor: pointer; }
+        .option-card span { font-size: 24px; margin-bottom: 8px; }
+
+        .white-section { background: #f5f5f5; border-top-left-radius: 30px; border-top-right-radius: 30px; padding: 25px; flex-grow: 1; }
+        
+        /* CARTÃO (FOTO 10595.png) */
+        .card-container { background: #2ecc71; border-radius: 20px; padding: 20px; color: white; position: relative; height: 180px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 15px; }
+        .card-logo { font-size: 24px; font-weight: bold; }
+        .card-type { font-size: 12px; opacity: 0.8; margin-top: 5px; }
+        .mastercard-circles { position: absolute; bottom: 20px; right: 20px; display: flex; }
+        .circle-red { width: 30px; height: 30px; background: #eb001b; border-radius: 50%; }
+        .circle-orange { width: 30px; height: 30px; background: #ff5f00; border-radius: 50%; margin-left: -12px; opacity: 0.9; }
+        .btn-card-details { background: #1a1a1a; color: white; border-radius: 30px; padding: 12px; width: 100%; text-align: center; margin-top: 20px; font-weight: bold; font-size: 14px; }
+
+        /* --- COMPROVANTE (REVERTIDO PARA O ESTILO DA FOTO 10596.png) --- */
+        #receiptPage { background: #fff; padding: 0; }
+        .rec-top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .rec-body { padding: 0 25px; }
+        .rec-title { font-size: 20px; font-weight: 500; margin-bottom: 5px; }
+        .rec-date { color: #666; font-size: 14px; margin-bottom: 20px; }
+        .status-pill { background: #e8f7f0; color: #1e7e57; padding: 12px 15px; border-radius: 10px; font-size: 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+        .check-circle { background: #1e7e57; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        
+        .rec-label { color: #888; font-size: 14px; margin-bottom: 4px; }
+        .rec-value-big { font-size: 32px; font-weight: bold; margin-bottom: 25px; }
+        .rec-info-group { margin-bottom: 20px; }
+        .rec-name-bold { font-size: 16px; font-weight: bold; text-transform: uppercase; }
+        .rec-sub-info { color: #888; font-size: 13px; line-height: 1.4; }
+        
+        .rec-action-line { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin-top: 20px; font-weight: 500; }
+        .rec-footer-grid { display: flex; justify-content: space-around; padding: 30px 10px; background: #fff; }
+        .footer-btn { text-align: center; font-size: 11px; color: #333; }
+        .footer-icon-box { background: #f0f9f5; width: 55px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; font-size: 22px; color: #1e7e57; }
+
+        /* --- OUTRAS TELAS --- */
+        .page-header { padding: 20px; font-size: 20px; font-weight: bold; border-bottom: 1px solid #eee; }
+        .list-item { display: flex; justify-content: space-between; padding: 20px; border-bottom: 1px solid #eee; }
+
+        /* NAV BAR */
+        .nav-bar { height: 75px; background: #fff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
+        .nav-item { text-align: center; font-size: 10px; color: #777; flex: 1; cursor: pointer; }
+        .nav-item.active { color: #000; font-weight: bold; }
+        .home-circle { background: #222; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 2px; }
+
+        /* MODAIS */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; }
+        .btn-go { background: var(--picpay-green); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-weight: bold; }
+
+        #loadingPage { background: #fff; justify-content: center; align-items: center; }
+        .loader { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--picpay-green); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="homePage" class="page active">
+            <div class="header">
+                <div class="profile-pic">YG7</div>
+                <div style="background:#fff; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">🔔</div>
+            </div>
+            <div class="balance-section" onclick="abrirModalSaldo()">
+                <p style="margin:0; font-size: 14px;">Dinheiro na conta</p>
+                <div class="main-balance">R$ <span id="displaySaldo">0,10</span></div>
+            </div>
+            <div class="options-grid">
+                <div class="option-card" onclick="mudarPagina('skinsPage')"><span>🎨</span>Editar tema</div>
+                <div class="option-card" onclick="abrirModalPix()"><span>✣</span>Área Pix</div>
+                <div class="option-card" onclick="mudarPagina('piggyPage')"><span>🐷</span>Cofrinhos</div>
+                <div class="option-card" onclick="mudarPagina('walletPage')"><span>📊</span>Extrato</div>
+            </div>
+            <div class="white-section">
+                <h3>💳 Cartões</h3>
+                <div class="card-container">
+                    <div class="card-logo">PicPay</div>
+                    <div class="card-type">Débito</div>
+                    <div class="mastercard-circles"><div class="circle-red"></div><div class="circle-orange"></div></div>
+                </div>
+                <div class="btn-card-details">Ver detalhes do cartão</div>
+            </div>
+        </div>
+
+        <div id="receiptPage" class="page">
+            <div class="rec-top-nav">
+                <span onclick="mudarPagina('homePage')" style="font-size:30px">‹</span>
+                <span style="font-size:20px">📥</span>
+            </div>
+            <div class="rec-body">
+                <div class="rec-title">Comprovante de Pix</div>
+                <div class="rec-date" id="recData">25/abr/2026 - 17:12:53</div>
+                
+                <div class="status-pill">
+                    <div class="check-circle">✓</div> Seu pagamento foi enviado com sucesso!
+                </div>
+
+                <div class="rec-label">Valor</div>
+                <div class="rec-value-big">R$ <span id="resValor">8,00</span></div>
+
+                <div class="rec-info-group">
+                    <div class="rec-label">Para</div>
+                    <div class="rec-name-bold" id="resPara">ANA VITORIA BERNARDO TRINDADE PENHA</div>
+                    <div class="rec-sub-info">***.044.378-**<br>BANCO INTER</div>
+                </div>
+
+                <div class="rec-info-group">
+                    <div class="rec-label">De</div>
+                    <div class="rec-name-bold" id="resDe">Yago Raffael Trindade De Aguiar</div>
+                    <div class="rec-sub-info">***.859.488-**<br>PICPAY</div>
+                </div>
+
+                <div class="rec-info-group">
+                    <div class="rec-label">ID da transação</div>
+                    <div id="resId" style="font-size:12px; color:#333; word-break:break-all">E22896431202604252012KKX247c0155</div>
+                </div>
+
+                <div class="rec-action-line">
+                    Tive problema com esse Pix <span>›</span>
+                </div>
+            </div>
+
+            <div class="rec-footer-grid">
+                <div class="footer-btn" onclick="mudarPagina('homePage')"><div class="footer-icon-box">✣</div>Fazer outro Pix</div>
+                <div class="footer-btn"><div class="footer-icon-box">🔗</div>Compartilhar</div>
+                <div class="footer-btn"><div class="footer-icon-box">⭐</div>Favoritar</div>
+            </div>
+        </div>
+
+        <div id="shopPage" class="page">
+            <div class="page-header">🛍️ Loja PicPay</div>
+            <div class="list-item"><div><strong>iFood</strong><br><small>Crédito R$ 50</small></div><span>R$ 50,00</span></div>
+            <div class="list-item"><div><strong>Uber</strong><br><small>Crédito R$ 20</small></div><span>R$ 20,00</span></div>
+        </div>
+
+        <div id="piggyPage" class="page">
+            <div class="page-header">🐷 Cofrinho</div>
+            <div style="padding:20px; text-align:center">
+                <h2 id="saldoCofre">R$ 0,00</h2>
+                <input type="text" id="valorCofre" placeholder="Valor para guardar">
+                <button class="btn-go" onclick="guardarNoCofre()">Guardar</button>
+            </div>
+        </div>
+
+        <div id="skinsPage" class="page"><div class="page-header">🎨 Skins</div></div>
+        <div id="walletPage" class="page"><div class="page-header">📊 Extrato</div></div>
+
+        <div id="loadingPage" class="page">
+            <div class="loader"></div>
+            <p id="loadText" style="margin-top:20px">Processando...</p>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="mudarPagina('homePage')"><div class="home-circle">🏠</div>Início</div>
+            <div class="nav-item" onclick="mudarPagina('walletPage')">📊<br>Extrato</div>
+            <div class="nav-item" onclick="mudarPagina('skinsPage')">✨<br>Skins</div>
+            <div class="nav-item" onclick="mudarPagina('shopPage')">🛍️<br>Shop</div>
+            <div class="nav-item" onclick="mudarPagina('piggyPage')">🐷<br>Cofre</div>
+        </div>
+    </div>
+
+    <div id="modalSaldo" class="modal"><div class="modal-content"><h3>Ajustar Saldo</h3><input type="text" id="inSaldo"><button class="btn-go" onclick="confirmarSaldo()">Salvar</button></div></div>
+    <div id="modalPix" class="modal"><div class="modal-content"><h3>Enviar Pix</h3><input type="text" id="pValor" placeholder="Valor"><input type="text" id="pDestino" placeholder="Para quem?"><input type="text" id="pOrigem" placeholder="Seu nome"><button class="btn-go" onclick="processarPix()">Enviar</button></div></div>
+
+    <script>
+        function mudarPagina(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function abrirModalSaldo() { document.getElementById('modalSaldo').style.display = 'flex'; }
+        function abrirModalPix() { document.getElementById('modalPix').style.display = 'flex'; }
+        function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+        function confirmarSaldo() {
+            const v = document.getElementById('inSaldo').value;
+            if(v) document.getElementById('displaySaldo').innerText = v;
+            fecharModais();
+        }
+
+        function guardarNoCofre() {
+            const v = document.getElementById('valorCofre').value;
+            document.getElementById('saldoCofre').innerText = 'R$ ' + v;
+            alert("Guardado!");
+        }
+
+        function processarPix() {
+            const v = document.getElementById('pValor').value;
+            const d = document.getElementById('pDestino').value;
+            const o = document.getElementById('pOrigem').value;
+            
+            fecharModais();
+            mudarPagina('loadingPage');
+
+            setTimeout(() => {
+                document.getElementById('resValor').innerText = v;
+                document.getElementById('resPara').innerText = d.toUpperCase();
+                document.getElementById('resDe').innerText = o;
+                
+                const agora = new Date();
+                document.getElementById('recData').innerText = agora.toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'}).replace('.','') + " - " + agora.toLocaleTimeString();
+                document.getElementById('resId').innerText = "E" + Math.random().toString().slice(2,12) + Date.now() + "KKX" + Math.random().toString(36).substr(2,5);
+                
+                mudarPagina('receiptPage');
+            }, 10000);
+        }
+    </script>
+</body>
+              </html>
+              
